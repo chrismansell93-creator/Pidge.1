@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String          @id @default(cuid())
+  name            String?
+  email           String?         @unique
+  emailVerified   DateTime?
+  image           String?
+  photos          String?
+  passwordHash    String?
+  bio             String?
+  city            String?
+  latitude        Float?
+  longitude       Float?
+  interests       String?
+  timezone        String?
+  availability    String?
+  age             Int?
+  headline        String?
+  lookingFor      String?
+  gender          String?
+  into            String?
+  tribes          String?
+  lastActiveAt    DateTime?
+  isOnline        Boolean         @default(false)
+  isBoosted       Boolean         @default(false)
+  profileComplete Boolean         @default(false)
+  membershipTier      String    @default("free")
+  membershipExpiresAt DateTime?
+  dateOfBirth         DateTime?
+  ageConfirmed        Boolean   @default(false)
+  playPurchaseToken   String?
+  deletedAt           DateTime?
+  reportsMade         Report[]  @relation("ReportsMade")
+  reportsReceived     Report[]  @relation("ReportsReceived")
+  meetupRequests      MeetupRequest[] @relation("UserMeetups")
+  accounts        Account[]
+  sessions        Session[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  targetId   String
+  reason     String
+  details    String?
+  reporter   User     @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  target     User     @relation("ReportsReceived", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model MeetupRequest {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String
+  date        String
+  time        String
+  location    String?
+  type        String   @default("coffee")
+  createdBy   String
+  creator     User     @relation("UserMeetups", fields: [createdBy], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pidge</string>
+    <string name="title_activity_main">Pidge</string>
+    <string name="package_name">app.pidge.android</string>
+    <string name="custom_url_scheme">app.pidge.android</string>
+</resources>
