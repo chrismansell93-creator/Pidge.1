@@ -35,7 +35,7 @@ npx cap open android
 
 Then in Android Studio: Generate Signed App Bundle (.aab).
 
-- Package: `app.pidge.android`
+- Package: `com.pidge.myapp`
 - Subscription: `pidge_unlimited_monthly` (£10 / month)
 - Icons: `store/play/`
 - Listing copy: `store/play/LISTING.md`

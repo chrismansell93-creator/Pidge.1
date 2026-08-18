@@ -1,5 +1,5 @@
 const config = {
-  appId: "app.pidge.android",
+  appId: "com.pidge.myapp",
   appName: "Pidge",
   webDir: "public",
   server: {

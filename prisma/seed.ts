@@ -1079,6 +1079,36 @@ async function main() {
 
   await prisma.user.create({
     data: {
+      name: "Play Reviewer",
+      email: "play@pidge.dating",
+      passwordHash,
+      bio: "Google Play review account. 18+.",
+      city: "Soho",
+      latitude: 51.5136,
+      longitude: -0.1365,
+      interests: "review",
+      timezone: "GMT",
+      availability: "Anytime",
+      age: 28,
+      headline: "Play reviewer",
+      lookingFor: "Friends",
+      gender: "Man",
+      into: "Everyone",
+      tribes: "Geek",
+      lastActiveAt: new Date(),
+      isOnline: true,
+      isBoosted: false,
+      profileComplete: true,
+      membershipTier: "unlimited",
+      dateOfBirth: new Date("1998-01-15"),
+      ageConfirmed: true,
+      image: photo("photo-1500648767791-00dcc994a43e"),
+      photos: album(photo("photo-1500648767791-00dcc994a43e"), "reviewer"),
+    },
+  });
+
+  await prisma.user.create({
+    data: {
       name: "Chris",
       email: "test@example.com",
       passwordHash,

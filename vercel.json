@@ -1,0 +1,4 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npx prisma generate --schema=prisma/schema.prod.prisma && node scripts/prisma-push.mjs && next build"
+}

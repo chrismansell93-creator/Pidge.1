@@ -47,6 +47,8 @@ next-env.d.ts
 /android/build/
 /android/app/build/
 /android/local.properties
+/android/key.properties
+/android/pidge-upload-key.txt
 /android/captures/
 *.apk
 *.aab

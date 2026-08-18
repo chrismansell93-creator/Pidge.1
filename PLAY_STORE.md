@@ -12,7 +12,7 @@ Paste-ready listing copy is in `store/play/LISTING.md`.
 
 - **Category:** Dating
 - **Content rating:** Adults only (18+)
-- **Package:** `app.pidge.android`
+- **Package:** `com.pidge.myapp`
 
 ## Required Play Console answers
 

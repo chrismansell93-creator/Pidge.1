@@ -1,4 +1,4 @@
-package app.pidge.android;
+package com.pidge.myapp;
 
 import com.getcapacitor.BridgeActivity;
 
