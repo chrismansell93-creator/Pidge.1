@@ -16,10 +16,9 @@ export const registerSchema = z
     email: z.string().email("Enter a valid email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     dateOfBirth: z.string().min(1, "Enter your date of birth"),
-    acceptedTerms: z.preprocess(
-      (value) => value === true || value === "true" || value === "on",
-      z.boolean().refine((value) => value === true, "You must accept the terms and confirm you are 18+"),
-    ),
+    acceptedTerms: z
+      .boolean()
+      .refine((value) => value === true, "You must accept the terms and confirm you are 18+"),
   })
   .refine((data) => yearsOld(data.dateOfBirth) >= 18, {
     message: "You must be 18 or older to use Pidge",
