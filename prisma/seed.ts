@@ -11,16 +11,47 @@ function portrait(kind: "men" | "women", n: number) {
   return `https://randomuser.me/api/portraits/${kind}/${n}.jpg`;
 }
 
-const extraShots = [
-  photo("photo-1517836357463-d25dfeac3438"),
-  photo("photo-1504674900247-0877df9cc836"),
-  photo("photo-1514525253161-7a46d19cd819"),
-  photo("photo-1529156069898-49953e39b3ac"),
-  photo("photo-1500530855697-b586d89ba3ee"),
-  photo("photo-1470337458703-46ad1756a187"),
-  photo("photo-1517248135467-4c7edcad34c4"),
-  photo("photo-1469474968028-56623f02e42e"),
-];
+function presentationKind(name: string): "men" | "women" {
+  return women.has(name) || transWomen.has(name) || transfem.has(name) ? "women" : "men";
+}
+
+function uniqueMedia(people: { name: string; email: string }[]) {
+  let men = 0;
+  let women = 0;
+  const used = new Set<string>();
+  const byEmail = new Map<string, { image: string; photos: string }>();
+
+  function takeCover(name: string, email: string) {
+    const kind = presentationKind(name);
+    let url: string;
+    if (kind === "women" && women <= 99) {
+      url = portrait("women", women++);
+    } else if (kind === "men" && men <= 99) {
+      url = portrait("men", men++);
+    } else if (men <= 99) {
+      url = portrait("men", men++);
+    } else if (women <= 99) {
+      url = portrait("women", women++);
+    } else {
+      url = `https://picsum.photos/seed/${encodeURIComponent(`cover-${email}`)}/800/800`;
+    }
+    used.add(url);
+    return url;
+  }
+
+  for (const person of people) {
+    const image = takeCover(person.name, person.email);
+    const extras: string[] = [];
+    for (let slot = 0; extras.length < 5; slot++) {
+      const url = `https://picsum.photos/seed/${encodeURIComponent(`${person.email}-extra-${slot}`)}/800/800`;
+      if (used.has(url) || url === image) continue;
+      used.add(url);
+      extras.push(url);
+    }
+    byEmail.set(person.email, { image, photos: JSON.stringify([image, ...extras]) });
+  }
+  return byEmail;
+}
 
 const women = new Set([
   "Maya",
@@ -129,16 +160,8 @@ function identityFor(name: string) {
   return { gender, into: intoRotation[n % intoRotation.length], tribes };
 }
 
-function album(primary: string, key: string) {
-  const n = key.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  const extras = [
-    extraShots[n % extraShots.length],
-    extraShots[(n * 3) % extraShots.length],
-    extraShots[(n * 7) % extraShots.length],
-    portrait(n % 2 === 0 ? "men" : "women", (n % 90) + 1),
-    portrait(n % 2 === 0 ? "women" : "men", ((n * 5) % 90) + 1),
-  ].filter((url) => url !== primary);
-  return JSON.stringify([primary, ...extras].slice(0, 6));
+function album(primary: string, extras: string[]) {
+  return JSON.stringify([primary, ...extras.filter((url) => url !== primary)].slice(0, 6));
 }
 
 const nearbyPeople = [
@@ -1175,6 +1198,11 @@ const extraPeople = [
 });
 
 const allPeople = [...nearbyPeople, ...extraPeople];
+const media = uniqueMedia([
+  { name: "Play Reviewer", email: "play@pidge.dating" },
+  { name: "Chris", email: "test@example.com" },
+  ...allPeople,
+]);
 
 async function main() {
   const wipe = process.env.SEED_WIPE !== "0";
@@ -1189,9 +1217,12 @@ async function main() {
 
   const passwordHash = await bcrypt.hash("password123", 12);
 
+  const playMedia = media.get("play@pidge.dating")!;
+  const chrisMedia = media.get("test@example.com")!;
+
   await prisma.user.upsert({
     where: { email: "play@pidge.dating" },
-    update: {},
+    update: { image: playMedia.image, photos: playMedia.photos },
     create: {
       name: "Play Reviewer",
       email: "play@pidge.dating",
@@ -1216,14 +1247,14 @@ async function main() {
       membershipTier: "unlimited",
       dateOfBirth: new Date("1998-01-15"),
       ageConfirmed: true,
-      image: photo("photo-1500648767791-00dcc994a43e"),
-      photos: album(photo("photo-1500648767791-00dcc994a43e"), "reviewer"),
+      image: playMedia.image,
+      photos: playMedia.photos,
     },
   });
 
   await prisma.user.upsert({
     where: { email: "test@example.com" },
-    update: {},
+    update: { image: chrisMedia.image, photos: chrisMedia.photos },
     create: {
       name: "Chris",
       email: "test@example.com",
@@ -1246,8 +1277,8 @@ async function main() {
       isBoosted: false,
       profileComplete: true,
       membershipTier: "free",
-      image: photo("photo-1472099645785-5658abf4ff4e"),
-      photos: album(photo("photo-1472099645785-5658abf4ff4e"), "chris"),
+      image: chrisMedia.image,
+      photos: chrisMedia.photos,
     },
   });
 
@@ -1275,8 +1306,8 @@ async function main() {
         isOnline: person.isOnline,
         isBoosted: person.isBoosted,
         profileComplete: true,
-        image: person.image,
-        photos: album(person.image, person.email),
+        image: media.get(person.email)!.image,
+        photos: media.get(person.email)!.photos,
       };
       return prisma.user.upsert({
         where: { email: person.email },
