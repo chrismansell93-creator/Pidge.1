@@ -1070,6 +1070,8 @@ const nearbyPeople = [
 ];
 
 async function main() {
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
   await prisma.meetupRequest.deleteMany();
   await prisma.account.deleteMany();
   await prisma.session.deleteMany();
@@ -1167,7 +1169,45 @@ async function main() {
     }),
   );
 
-  console.log(`Seeded ${nearbyPeople.length + 1} nearby profiles.`);
+  const play = await prisma.user.findUnique({ where: { email: "play@pidge.dating" } });
+  const alex = await prisma.user.findUnique({ where: { email: "alex@example.com" } });
+  if (play && alex) {
+    const [userAId, userBId] = play.id < alex.id ? [play.id, alex.id] : [alex.id, play.id];
+    const conversation = await prisma.conversation.create({
+      data: { userAId, userBId, lastText: "You nearby? Grab a drink." },
+    });
+    await prisma.message.createMany({
+      data: [
+        {
+          conversationId: conversation.id,
+          senderId: alex.id,
+          body: "Hey — saw you on the grid. You nearby?",
+        },
+        {
+          conversationId: conversation.id,
+          senderId: play.id,
+          body: "Yeah, Soho. You still out?",
+        },
+        {
+          conversationId: conversation.id,
+          senderId: alex.id,
+          body: "You nearby? Grab a drink.",
+        },
+      ],
+    });
+    const last = await prisma.message.findFirst({
+      where: { conversationId: conversation.id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (last) {
+      await prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { lastMessageAt: last.createdAt, lastText: last.body },
+      });
+    }
+  }
+
+  console.log(`Seeded ${nearbyPeople.length + 2} nearby profiles.`);
 }
 
 main()

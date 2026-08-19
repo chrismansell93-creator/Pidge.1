@@ -108,7 +108,10 @@ export function AppChrome({
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-black/95">
         <div className="mx-auto grid max-w-5xl grid-cols-4">
           {tabs.map((tab) => {
-            const active = pathname === tab.href;
+            const active =
+              tab.href === "/"
+                ? pathname === "/"
+                : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
             const Icon = tab.icon;
             return (
               <Link

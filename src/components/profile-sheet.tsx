@@ -197,7 +197,19 @@ export function ProfileSheet({ person, onClose, onTap }: ProfileSheetProps) {
               </button>
               <button
                 type="button"
-                onClick={() => router.push("/inbox")}
+                onClick={async () => {
+                  const res = await fetch("/api/chats", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId: person.id }),
+                  });
+                  const data = await res.json().catch(() => null);
+                  if (res.ok && data?.id) {
+                    router.push(`/inbox/${data.id}`);
+                    return;
+                  }
+                  router.push("/inbox");
+                }}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-bold text-white"
               >
                 <MessageCircle className="size-4" />
