@@ -49,13 +49,32 @@ const women = new Set([
   "Imani",
   "Celine",
   "Talia",
+  "Sofia",
+  "Lucia",
+  "Nadia",
+  "Esme",
+  "Ines",
+  "Gemma",
+  "Bella",
+  "Nora",
+  "Aisha",
+  "Leila",
+  "Sienna",
+  "Olivia",
+  "Hannah",
+  "Grace",
+  "Violet",
+  "Avery",
+  "Harper",
+  "Skye",
+  "Riley",
 ]);
 
-const nonbinary = new Set(["Jordan", "Sasha", "Noor", "Wren"]);
-const transMen = new Set(["Kai", "Finn", "Asher"]);
-const transWomen = new Set(["Jade", "Hana", "Celine"]);
-const transmasc = new Set(["Theo"]);
-const transfem = new Set(["Ivy"]);
+const nonbinary = new Set(["Jordan", "Sasha", "Noor", "Wren", "Quinn", "Rowan", "Sage", "River"]);
+const transMen = new Set(["Kai", "Finn", "Asher", "Ellis"]);
+const transWomen = new Set(["Jade", "Hana", "Celine", "Marley"]);
+const transmasc = new Set(["Theo", "Drew"]);
+const transfem = new Set(["Ivy", "Phoenix"]);
 
 const intoRotation = [
   "Men",
@@ -1069,18 +1088,111 @@ const nearbyPeople = [
   },
 ];
 
+const extraPeople = [
+  ["Sofia", 26, "Shoreditch", 51.526, -0.078, "Dates", true, 3],
+  ["Tomas", 30, "Dalston", 51.548, -0.076, "Right now", true, 6],
+  ["Lucia", 28, "Islington", 51.536, -0.103, "Chat", false, 40],
+  ["Nico", 27, "Angel", 51.532, -0.106, "Friends", true, 9],
+  ["Nadia", 32, "King's Cross", 51.531, -0.124, "Dates", true, 2],
+  ["Adrian", 29, "Bloomsbury", 51.522, -0.128, "Chat", false, 55],
+  ["Esme", 24, "Clerkenwell", 51.523, -0.107, "Right now", true, 11],
+  ["Callum", 33, "Barbican", 51.52, -0.095, "Dates", true, 14],
+  ["Ines", 31, "Bank", 51.513, -0.089, "Friends", false, 70],
+  ["Ewan", 28, "London Bridge", 51.505, -0.086, "Chat", true, 5],
+  ["Gemma", 27, "Bermondsey", 51.498, -0.081, "Dates", true, 18],
+  ["Louis", 34, "Peckham", 51.474, -0.069, "Right now", false, 90],
+  ["Bella", 25, "Brixton", 51.462, -0.115, "Friends", true, 7],
+  ["Mateo", 29, "Stockwell", 51.472, -0.122, "Dates", true, 21],
+  ["Nora", 30, "Clapham", 51.462, -0.138, "Chat", false, 48],
+  ["Hassan", 32, "Battersea", 51.477, -0.148, "Right now", true, 4],
+  ["Aisha", 26, "Chelsea", 51.487, -0.169, "Dates", true, 16],
+  ["Ibrahim", 35, "Fulham", 51.477, -0.201, "Friends", false, 110],
+  ["Leila", 29, "Hammersmith", 51.492, -0.224, "Chat", true, 13],
+  ["Jaden", 24, "Shepherd's Bush", 51.505, -0.226, "Right now", true, 8],
+  ["Sienna", 27, "Notting Hill", 51.516, -0.197, "Dates", false, 62],
+  ["Kyle", 31, "Paddington", 51.515, -0.176, "Friends", true, 19],
+  ["Olivia", 28, "Marylebone", 51.522, -0.157, "Chat", true, 10],
+  ["Mason", 26, "Regent's Park", 51.531, -0.157, "Dates", false, 77],
+  ["Hannah", 33, "Camden", 51.541, -0.143, "Right now", true, 1],
+  ["Noah", 29, "Chalk Farm", 51.544, -0.153, "Friends", true, 22],
+  ["Grace", 25, "Kentish Town", 51.55, -0.141, "Dates", false, 51],
+  ["Oscar", 36, "Tufnell Park", 51.557, -0.138, "Chat", true, 15],
+  ["Violet", 27, "Highbury", 51.552, -0.102, "Right now", true, 12],
+  ["Patrick", 30, "Stoke Newington", 51.562, -0.074, "Dates", false, 84],
+  ["Avery", 26, "Hackney", 51.545, -0.055, "Friends", true, 6],
+  ["Ruben", 32, "Homerton", 51.547, -0.043, "Chat", true, 17],
+  ["Harper", 28, "Bow", 51.527, -0.017, "Dates", false, 66],
+  ["Stefan", 34, "Canary Wharf", 51.505, -0.023, "Right now", true, 3],
+  ["Skye", 24, "Greenwich", 51.477, 0.0, "Friends", true, 25],
+  ["Victor", 29, "Deptford", 51.478, -0.026, "Dates", false, 93],
+  ["Riley", 27, "New Cross", 51.475, -0.037, "Chat", true, 9],
+  ["Will", 31, "Lewisham", 51.461, -0.012, "Friends", true, 28],
+  ["Quinn", 26, "Brockley", 51.464, -0.037, "Dates", false, 58],
+  ["Yusuf", 33, "Whitechapel", 51.516, -0.059, "Right now", true, 4],
+  ["Rowan", 25, "Spitalfields", 51.52, -0.075, "Chat", true, 11],
+  ["Ellis", 29, "Hoxton", 51.531, -0.081, "Friends", false, 44],
+  ["Marley", 27, "Old Street", 51.526, -0.087, "Dates", true, 2],
+  ["Drew", 30, "Farringdon", 51.52, -0.105, "Right now", true, 8],
+  ["Phoenix", 24, "Holborn", 51.517, -0.12, "Chat", false, 71],
+  ["Sage", 28, "Temple", 51.511, -0.114, "Friends", true, 20],
+  ["River", 26, "South Bank", 51.507, -0.117, "Dates", true, 5],
+  ["Casey", 32, "Waterloo", 51.503, -0.114, "Right now", false, 39],
+  ["Ari", 25, "Vauxhall", 51.486, -0.123, "Chat", true, 7],
+  ["Blake", 31, "Kennington", 51.488, -0.11, "Friends", true, 16],
+  ["Cameron", 29, "Elephant & Castle", 51.495, -0.1, "Dates", false, 81],
+  ["Peyton", 27, "Borough", 51.504, -0.091, "Right now", true, 6],
+  ["Taylor", 34, "Monument", 51.511, -0.086, "Chat", true, 13],
+  ["Jamie", 28, "Aldgate", 51.514, -0.076, "Friends", false, 47],
+  ["Morgan", 30, "Liverpool Street", 51.518, -0.081, "Dates", true, 9],
+].map((row, index) => {
+  const [name, age, city, latitude, longitude, lookingFor, isOnline, minutesAgo] = row as [
+    string,
+    number,
+    string,
+    number,
+    number,
+    string,
+    boolean,
+    number,
+  ];
+  const kind = women.has(name) || nonbinary.has(name) || transfem.has(name) || transWomen.has(name) ? "women" : "men";
+  return {
+    name,
+    email: `${name.toLowerCase()}.${index}@pidge.dating`,
+    age,
+    city,
+    latitude,
+    longitude,
+    headline: isOnline ? "Online now" : "Around later",
+    about: `Based in ${city}. ${lookingFor === "Right now" ? "Free tonight." : "Open to seeing who is nearby."}`,
+    lookingFor,
+    interests: "nights out, gym, music",
+    isOnline,
+    isBoosted: index % 9 === 0,
+    minutesAgo,
+    image: portrait(kind, (index % 90) + 1),
+  };
+});
+
+const allPeople = [...nearbyPeople, ...extraPeople];
+
 async function main() {
-  await prisma.message.deleteMany();
-  await prisma.conversation.deleteMany();
-  await prisma.meetupRequest.deleteMany();
-  await prisma.account.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.user.deleteMany();
+  const wipe = process.env.SEED_WIPE !== "0";
+  if (wipe) {
+    await prisma.message.deleteMany();
+    await prisma.conversation.deleteMany();
+    await prisma.meetupRequest.deleteMany();
+    await prisma.account.deleteMany();
+    await prisma.session.deleteMany();
+    await prisma.user.deleteMany();
+  }
 
   const passwordHash = await bcrypt.hash("password123", 12);
 
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: "play@pidge.dating" },
+    update: {},
+    create: {
       name: "Play Reviewer",
       email: "play@pidge.dating",
       passwordHash,
@@ -1109,8 +1221,10 @@ async function main() {
     },
   });
 
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: "test@example.com" },
+    update: {},
+    create: {
       name: "Chris",
       email: "test@example.com",
       passwordHash,
@@ -1138,40 +1252,43 @@ async function main() {
   });
 
   await Promise.all(
-    nearbyPeople.map((person) => {
+    allPeople.map((person) => {
       const identity = identityFor(person.name);
-      return prisma.user.create({
-        data: {
-          name: person.name,
-          email: person.email,
-          passwordHash,
-          bio: person.about,
-          city: person.city,
-          latitude: person.latitude,
-          longitude: person.longitude,
-          interests: person.interests,
-          timezone: "GMT",
-          availability: person.isOnline ? "Now" : "Later",
-          age: person.age,
-          headline: person.headline,
-          lookingFor: person.lookingFor,
-          gender: identity.gender,
-          into: identity.into,
-          tribes: identity.tribes,
-          lastActiveAt: new Date(Date.now() - person.minutesAgo * 60 * 1000),
-          isOnline: person.isOnline,
-          isBoosted: person.isBoosted,
-          profileComplete: true,
-          image: person.image,
-          photos: album(person.image, person.email),
-        },
+      const data = {
+        name: person.name,
+        email: person.email,
+        passwordHash,
+        bio: person.about,
+        city: person.city,
+        latitude: person.latitude,
+        longitude: person.longitude,
+        interests: person.interests,
+        timezone: "GMT",
+        availability: person.isOnline ? "Now" : "Later",
+        age: person.age,
+        headline: person.headline,
+        lookingFor: person.lookingFor,
+        gender: identity.gender,
+        into: identity.into,
+        tribes: identity.tribes,
+        lastActiveAt: new Date(Date.now() - person.minutesAgo * 60 * 1000),
+        isOnline: person.isOnline,
+        isBoosted: person.isBoosted,
+        profileComplete: true,
+        image: person.image,
+        photos: album(person.image, person.email),
+      };
+      return prisma.user.upsert({
+        where: { email: person.email },
+        update: data,
+        create: data,
       });
     }),
   );
 
   const play = await prisma.user.findUnique({ where: { email: "play@pidge.dating" } });
   const alex = await prisma.user.findUnique({ where: { email: "alex@example.com" } });
-  if (play && alex) {
+  if (play && alex && wipe) {
     const [userAId, userBId] = play.id < alex.id ? [play.id, alex.id] : [alex.id, play.id];
     const conversation = await prisma.conversation.create({
       data: { userAId, userBId, lastText: "You nearby? Grab a drink." },
@@ -1207,7 +1324,8 @@ async function main() {
     }
   }
 
-  console.log(`Seeded ${nearbyPeople.length + 2} nearby profiles.`);
+  const total = await prisma.user.count({ where: { deletedAt: null } });
+  console.log(`Seeded ${allPeople.length + 2} listed profiles. Database now has ${total} users.`);
 }
 
 main()
