@@ -34,6 +34,7 @@ export default function ProfilePage() {
   const [into, setInto] = useState<string[]>([]);
   const [tribes, setTribes] = useState<string[]>([]);
   const [unlimited, setUnlimited] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const {
     register,
     handleSubmit,
@@ -65,6 +66,7 @@ export default function ProfilePage() {
         setInto(parseList(data.into));
         setTribes(parseList(data.tribes));
         setUnlimited(isUnlimited(data.membershipTier, data.membershipExpiresAt));
+        setIsAdmin(Boolean(data.isAdmin));
         const album = Array.isArray(data.photos)
           ? data.photos
           : data.image
@@ -121,6 +123,20 @@ export default function ProfilePage() {
             {unlimited ? "Manage" : "Go Unlimited"}
           </span>
         </Link>
+        {isAdmin ? (
+          <Link
+            href="/dashboard"
+            className="mt-3 flex items-center justify-between rounded-2xl border border-white/15 bg-white/5 px-4 py-3"
+          >
+            <div>
+              <p className="text-sm font-black text-white">Site overview</p>
+              <p className="text-xs text-zinc-400">Traffic, engagement & moderation</p>
+            </div>
+            <span className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-black text-white">
+              Open admin
+            </span>
+          </Link>
+        ) : null}
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1">
