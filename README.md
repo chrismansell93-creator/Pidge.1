@@ -16,15 +16,20 @@ npm run dev
 
 Open http://localhost:3000
 
+Seeded demo login (local only): `test@example.com` / `password123`.
+
 ## Production env
 
 ```
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="<your production database url>"
 AUTH_SECRET="<generate with npx auth secret>"
 AUTH_URL="https://www.pidge.dating"
 NEXT_PUBLIC_APP_URL="https://www.pidge.dating"
 PLAY_PRODUCT_ID="pidge_unlimited_monthly"
+ADMIN_EMAILS="you@example.com"
 ```
+
+`ADMIN_EMAILS` is required in production (comma-separated). Without it, nobody can open `/dashboard`.
 
 ## Android / Play Store
 

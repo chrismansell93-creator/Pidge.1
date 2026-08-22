@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { monthFromNow } from "@/lib/membership";
 import { PLAY_PRODUCT_ID } from "@/lib/platform";
 import { membershipPayload } from "@/app/api/membership/route";
+import { requireActiveUser } from "@/lib/active-user";
 
 const bodySchema = z.object({
   productId: z.string().min(1),
@@ -13,10 +13,8 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -28,7 +26,7 @@ export async function POST(req: Request) {
   }
 
   const user = await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: active.user.id },
     data: {
       membershipTier: "unlimited",
       membershipExpiresAt: monthFromNow(),

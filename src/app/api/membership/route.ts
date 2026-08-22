@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { FREE_DAILY_TAPS, isUnlimited } from "@/lib/membership";
+import { requireActiveUser } from "@/lib/active-user";
 
 const bodySchema = z.object({
   plan: z.enum(["free"]),
@@ -24,22 +24,19 @@ export function membershipPayload(user: {
 }
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: active.user.id },
     select: {
       membershipTier: true,
       membershipExpiresAt: true,
       playPurchaseToken: true,
-      deletedAt: true,
     },
   });
 
-  if (!user || user.deletedAt) {
+  if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
@@ -47,10 +44,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -61,7 +56,7 @@ export async function POST(req: Request) {
   }
 
   const updated = await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: active.user.id },
     data: {
       membershipTier: "free",
       membershipExpiresAt: null,
