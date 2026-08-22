@@ -1,27 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { adminEmails, isAdminEmail } from "@/lib/admin-emails";
 
-// Site owners who may oversee the whole site. Configure via the ADMIN_EMAILS
-// env var (comma-separated). Falls back to the seeded owner account so the
-// dashboard is reachable out of the box in local/dev setups.
-const DEFAULT_ADMIN_EMAILS = ["test@example.com", "chrismansell93@gmail.com"];
-
-export function adminEmails(): string[] {
-  const raw = process.env.ADMIN_EMAILS?.trim();
-  const list = raw
-    ? raw
-        .split(",")
-        .map((entry) => entry.trim().toLowerCase())
-        .filter(Boolean)
-    : DEFAULT_ADMIN_EMAILS;
-  return list;
-}
-
-export function isAdminEmail(email?: string | null): boolean {
-  if (!email) return false;
-  return adminEmails().includes(email.toLowerCase());
-}
+export { adminEmails, isAdminEmail };
 
 export type AdminIdentity = { id: string; email: string };
 

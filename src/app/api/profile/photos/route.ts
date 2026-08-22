@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
@@ -33,11 +34,33 @@ export async function POST(req: Request) {
           ? "gif"
           : "jpg";
 
-  const dir = path.join(process.cwd(), "public", "uploads", session.user.id);
-  await mkdir(dir, { recursive: true });
-
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
+  const objectKey = `uploads/${session.user.id}/${filename}`;
+
+  // Prefer durable Blob storage whenever a token is present (prod and local).
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(objectKey, buffer, {
+      access: "public",
+      contentType: file.type,
+      addRandomSuffix: false,
+    });
+    return NextResponse.json({ url: blob.url });
+  }
+
+  // On Vercel the filesystem is ephemeral — refuse rather than silently lose photos.
+  if (process.env.VERCEL === "1") {
+    return NextResponse.json(
+      {
+        error:
+          "Photo storage is not configured. Add BLOB_READ_WRITE_TOKEN to the Vercel project.",
+      },
+      { status: 503 },
+    );
+  }
+
+  const dir = path.join(process.cwd(), "public", "uploads", session.user.id);
+  await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, filename), buffer);
 
   return NextResponse.json({

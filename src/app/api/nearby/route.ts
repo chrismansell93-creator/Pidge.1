@@ -8,6 +8,7 @@ import {
   type NearbyPerson,
 } from "@/lib/geo";
 import { photosFromUser } from "@/lib/photos";
+import { FREE_VISIBLE_PROFILES, isUnlimited } from "@/lib/membership";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -113,11 +114,25 @@ export async function GET(req: Request) {
     };
   });
 
+  const sorted = sortNearby([meCard, ...people]);
+  const unlimited = isUnlimited(me.membershipTier, me.membershipExpiresAt);
+  const meRows = sorted.filter((person) => person.isMe);
+  const otherRows = sorted.filter((person) => !person.isMe);
+  const visibleOthers = unlimited
+    ? otherRows
+    : otherRows.slice(0, FREE_VISIBLE_PROFILES);
+  const lockedCount = unlimited
+    ? 0
+    : Math.max(0, otherRows.length - FREE_VISIBLE_PROFILES);
+
   return NextResponse.json({
     origin,
     city: me.city,
     usingLiveGps,
+    isUnlimited: unlimited,
+    freeVisibleProfiles: FREE_VISIBLE_PROFILES,
+    lockedCount,
     me: meCard,
-    people: sortNearby([meCard, ...people]),
+    people: [...meRows, ...visibleOthers],
   });
 }

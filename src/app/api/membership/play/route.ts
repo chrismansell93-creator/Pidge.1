@@ -3,8 +3,8 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { monthFromNow } from "@/lib/membership";
-import { PLAY_PRODUCT_ID } from "@/lib/platform";
 import { membershipPayload } from "@/app/api/membership/route";
+import { verifyPlayPurchase } from "@/lib/play-verify";
 
 const bodySchema = z.object({
   productId: z.string().min(1),
@@ -23,8 +23,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid Play purchase" }, { status: 400 });
   }
 
-  if (parsed.data.productId !== PLAY_PRODUCT_ID) {
-    return NextResponse.json({ error: "Unknown Play product" }, { status: 400 });
+  const verified = await verifyPlayPurchase(parsed.data);
+  if (!verified.ok) {
+    return NextResponse.json({ error: verified.error }, { status: verified.status });
   }
 
   const user = await prisma.user.update({

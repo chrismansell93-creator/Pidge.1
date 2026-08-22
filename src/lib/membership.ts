@@ -22,11 +22,6 @@ export function isUnlimited(
   return Number.isFinite(ts) ? ts > Date.now() : true;
 }
 
-export function tapsStorageKey(userId: string): string {
-  const day = new Date().toISOString().slice(0, 10);
-  return `pidge_taps_${userId}_${day}`;
-}
-
 export function monthFromNow(): Date {
   return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 }

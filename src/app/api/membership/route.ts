@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { FREE_DAILY_TAPS, isUnlimited } from "@/lib/membership";
+import { getDailyTapUsage } from "@/lib/taps";
 
 const bodySchema = z.object({
   plan: z.enum(["free"]),
@@ -43,7 +44,12 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  return NextResponse.json(membershipPayload(user));
+  const usage = await getDailyTapUsage(session.user.id);
+  return NextResponse.json({
+    ...membershipPayload(user),
+    dailyTapsUsed: usage.used,
+    dailyTapsRemaining: usage.remaining,
+  });
 }
 
 export async function POST(req: Request) {

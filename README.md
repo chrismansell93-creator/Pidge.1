@@ -27,23 +27,32 @@ AUTH_URL="https://www.pidge.dating"
 NEXT_PUBLIC_APP_URL="https://www.pidge.dating"
 PLAY_PRODUCT_ID="pidge_unlimited_monthly"
 ADMIN_EMAILS="you@example.com"
+BLOB_READ_WRITE_TOKEN="<from Vercel Blob store>"
+GOOGLE_PLAY_PACKAGE_NAME="com.pidge.myapp"
+GOOGLE_PLAY_SERVICE_ACCOUNT_JSON="<Play Console API service-account JSON>"
 ```
+
+`ADMIN_EMAILS` is required in production (no hardcoded owners). `BLOB_READ_WRITE_TOKEN` is required for profile photos on Vercel. Play Unlimited grants are refused until `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` is set.
 
 After the first deploy, seed the production database once (from a machine with `DATABASE_URL` set to the prod Postgres URL):
 
 ```bash
-npx prisma db push --schema=prisma/schema.prod.prisma
-npx prisma db seed
+SEED_WIPE=0 npx prisma db push --schema=prisma/schema.prod.prisma
+SEED_WIPE=0 npx prisma db seed
 ```
 
+Never run the seed against production without `SEED_WIPE=0`.
+
 ## Android / Play Store
+
+Web host is live at [www.pidge.dating](https://www.pidge.dating). Sync and open Android Studio:
 
 ```bash
 npx cap sync android
 npx cap open android
 ```
 
-Then in Android Studio: Generate Signed App Bundle (.aab).
+Then generate a signed App Bundle (.aab).
 
 - Package: `com.pidge.myapp`
 - Subscription: `pidge_unlimited_monthly` (£10 / month)
@@ -51,7 +60,7 @@ Then in Android Studio: Generate Signed App Bundle (.aab).
 - Listing copy: `store/play/LISTING.md`
 - Full Play notes: `PLAY_STORE.md`
 
-Until www.pidge.dating is live, the packaged app has no host. For a device test, set `NEXT_PUBLIC_APP_URL` to your LAN URL and run `npx cap sync android`.
+For a LAN device test against a local Next server, set `NEXT_PUBLIC_APP_URL` to your LAN URL and run `npx cap sync android`.
 
 ## Legal
 

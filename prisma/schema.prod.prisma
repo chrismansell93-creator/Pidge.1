@@ -44,10 +44,25 @@ model User {
   conversationsA  Conversation[] @relation("ConversationA")
   conversationsB  Conversation[] @relation("ConversationB")
   sentMessages    Message[]
+  tapsSent        Tap[]           @relation("TapsSent")
+  tapsReceived    Tap[]           @relation("TapsReceived")
   accounts        Account[]
   sessions        Session[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+}
+
+model Tap {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  fromUser   User     @relation("TapsSent", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User     @relation("TapsReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId, createdAt])
+  @@index([fromUserId, createdAt])
 }
 
 model Account {

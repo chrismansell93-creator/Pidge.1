@@ -14,11 +14,7 @@ import {
 } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 import { TRIBE_OPTIONS, hasTribe, matchesGenderFilter } from "@/lib/profile-options";
-import {
-  FREE_DAILY_TAPS,
-  FREE_VISIBLE_PROFILES,
-  tapsStorageKey,
-} from "@/lib/membership";
+import { FREE_DAILY_TAPS, FREE_VISIBLE_PROFILES } from "@/lib/membership";
 
 type GridFilter = "all" | "online" | "fresh" | "men" | "women" | "nb" | "trans" | "one" | "five" | "fifteen";
 
@@ -69,10 +65,12 @@ export function GeoGrid({ initialPeople, initialCity, initialUnlimited = false }
     const data = (await res.json()) as {
       city?: string | null;
       usingLiveGps?: boolean;
+      isUnlimited?: boolean;
       people: NearbyPerson[];
     };
     setPeople(sortNearby(data.people ?? []));
     if (data.city) setCity(data.city);
+    if (data.isUnlimited != null) setIsUnlimited(Boolean(data.isUnlimited));
     return data;
   }, []);
 
@@ -171,8 +169,12 @@ export function GeoGrid({ initialPeople, initialCity, initialUnlimited = false }
         if (data?.isUnlimited != null) setIsUnlimited(Boolean(data.isUnlimited));
       })
       .catch(() => undefined);
-    const used = Number(localStorage.getItem(tapsStorageKey("me")) ?? 0);
-    setTapsUsed(Number.isFinite(used) ? used : 0);
+    fetch("/api/taps")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.used != null) setTapsUsed(Number(data.used) || 0);
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -219,19 +221,35 @@ export function GeoGrid({ initialPeople, initialCity, initialUnlimited = false }
     return items;
   }, [visible, isUnlimited]);
 
-  function handleTap(person: NearbyPerson) {
+  async function handleTap(person: NearbyPerson) {
     if (!isUnlimited && tapsUsed >= FREE_DAILY_TAPS) {
       setSelected(null);
       router.push("/membership");
       return;
     }
-    if (!isUnlimited) {
-      const next = tapsUsed + 1;
-      setTapsUsed(next);
-      localStorage.setItem(tapsStorageKey("me"), String(next));
+
+    try {
+      const res = await fetch("/api/taps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetId: person.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.status === 402 || data?.code === "TAP_LIMIT") {
+        setSelected(null);
+        router.push("/membership");
+        return;
+      }
+      if (!res.ok) {
+        setToast(data?.error ?? "Could not send tap");
+        return;
+      }
+      if (typeof data?.used === "number") setTapsUsed(data.used);
+      setToast(data?.alreadyTapped ? `Already tapped ${person.name}` : `Tapped ${person.name}`);
+      setSelected(null);
+    } catch {
+      setToast("Could not send tap");
     }
-    setToast(`Tapped ${person.name}`);
-    setSelected(null);
   }
 
   return (

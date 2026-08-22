@@ -9,7 +9,7 @@ import { parseList } from "@/lib/profile-options";
 type ProfileSheetProps = {
   person: NearbyPerson;
   onClose: () => void;
-  onTap: (person: NearbyPerson) => void;
+  onTap: (person: NearbyPerson) => void | Promise<void>;
 };
 
 export function ProfileSheet({ person, onClose, onTap }: ProfileSheetProps) {
