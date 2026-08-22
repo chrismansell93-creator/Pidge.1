@@ -1,0 +1,9 @@
+{
+  "name": "Pidge",
+  "slug": "pidge",
+  "owner": "chrismansell93-creator",
+  "version": "1.0.0",
+  "android": {
+    "package": "com.pidge.myapp"
+  }
+}
