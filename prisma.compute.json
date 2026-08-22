@@ -1,0 +1,11 @@
+{
+  "region": "eu-west-3",
+  "app": {
+    "name": "Pidge.Dating",
+    "framework": "nextjs",
+    "httpPort": 3000,
+    "build": {
+      "command": "npm run build"
+    }
+  }
+}
