@@ -37,6 +37,8 @@ model User {
   dateOfBirth         DateTime?
   ageConfirmed        Boolean   @default(false)
   playPurchaseToken   String?
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
   deletedAt           DateTime?
   reportsMade         Report[]  @relation("ReportsMade")
   reportsReceived     Report[]  @relation("ReportsReceived")
