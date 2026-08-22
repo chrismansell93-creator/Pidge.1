@@ -1,16 +1,14 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AppChrome } from "@/components/app-chrome";
 import { AdSlot } from "@/components/ad-slot";
 import { isUnlimited } from "@/lib/membership";
+import { requirePageUser } from "@/lib/active-user";
 
 export default async function TapsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  const active = await requirePageUser();
 
   const me = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: active.id },
     select: { membershipTier: true, membershipExpiresAt: true },
   });
   const unlimited = isUnlimited(me?.membershipTier, me?.membershipExpiresAt);

@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { meetupSchema } from "@/lib/validations";
+import { requireActiveUser } from "@/lib/active-user";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const meetups = await prisma.meetupRequest.findMany({
-    where: { createdBy: session.user.id },
+    where: { createdBy: active.user.id },
     orderBy: { createdAt: "desc" },
   });
 
@@ -18,10 +16,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const body = await req.json().catch(() => null);
   const parsed = meetupSchema.safeParse(body);
@@ -34,7 +30,7 @@ export async function POST(req: Request) {
 
   const meetup = await prisma.meetupRequest.create({
     data: {
-      createdBy: session.user.id,
+      createdBy: active.user.id,
       title: parsed.data.title,
       summary: parsed.data.summary,
       date: parsed.data.date,

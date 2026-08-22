@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { getOrCreateConversation, listConversations, otherUserId } from "@/lib/chats";
 import { photosFromUser } from "@/lib/photos";
+import { requireActiveUser } from "@/lib/active-user";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
-  const rows = await listConversations(session.user.id);
+  const rows = await listConversations(active.user.id);
   return NextResponse.json({
     chats: rows.map((row) => {
       const other =
-        otherUserId(row.userAId, row.userBId, session.user.id) === row.userAId
+        otherUserId(row.userAId, row.userBId, active.user.id) === row.userAId
           ? row.userA
           : row.userB;
       return {
@@ -31,10 +29,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const body = (await req.json().catch(() => null)) as { userId?: string } | null;
   if (!body?.userId) {
@@ -42,7 +38,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const conversation = await getOrCreateConversation(session.user.id, body.userId);
+    const conversation = await getOrCreateConversation(active.user.id, body.userId);
     return NextResponse.json({ id: conversation.id });
   } catch (error) {
     return NextResponse.json(

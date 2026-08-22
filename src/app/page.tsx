@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { GeoGrid } from "@/components/geo-grid";
 import {
@@ -12,13 +11,13 @@ import {
 } from "@/lib/geo";
 import { photosFromUser } from "@/lib/photos";
 import { isUnlimited } from "@/lib/membership";
+import { requirePageUser } from "@/lib/active-user";
 
 export default async function Home() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  const active = await requirePageUser();
 
   const me = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: active.id },
   });
   if (!me) redirect("/login");
 

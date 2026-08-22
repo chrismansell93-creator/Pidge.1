@@ -1,19 +1,18 @@
-import { notFound, redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { otherUserId } from "@/lib/chats";
 import { photosFromUser } from "@/lib/photos";
 import { ChatThread } from "@/components/chat-thread";
+import { requirePageUser } from "@/lib/active-user";
 
 export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  const active = await requirePageUser();
 
   const { id } = await params;
   const conversation = await prisma.conversation.findFirst({
     where: {
       id,
-      OR: [{ userAId: session.user.id }, { userBId: session.user.id }],
+      OR: [{ userAId: active.id }, { userBId: active.id }],
     },
     include: {
       userA: { select: { id: true, name: true, image: true, photos: true, deletedAt: true } },
@@ -24,7 +23,7 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
   if (!conversation) notFound();
 
   const other =
-    otherUserId(conversation.userAId, conversation.userBId, session.user.id) ===
+    otherUserId(conversation.userAId, conversation.userBId, active.id) ===
     conversation.userAId
       ? conversation.userA
       : conversation.userB;
@@ -37,7 +36,7 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
       initialMessages={conversation.messages.map((message) => ({
         id: message.id,
         body: message.body,
-        mine: message.senderId === session.user.id,
+        mine: message.senderId === active.id,
         createdAt: message.createdAt.toISOString(),
       }))}
     />

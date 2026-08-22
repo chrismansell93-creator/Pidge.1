@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { locationSchema } from "@/lib/validations";
+import { requireActiveUser } from "@/lib/active-user";
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const body = await req.json().catch(() => null);
   const parsed = locationSchema.safeParse(body);
@@ -19,7 +17,7 @@ export async function POST(req: Request) {
   }
 
   const user = await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: active.user.id },
     data: {
       latitude: parsed.data.latitude,
       longitude: parsed.data.longitude,

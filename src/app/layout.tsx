@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { Analytics } from "@vercel/analytics/next";
+import { SiteTelemetry } from "@/components/site-telemetry";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="en" className={cn("dark font-sans", geist.variable)}>
       <body className="min-h-screen bg-black text-white antialiased">
         {children}
-        <Analytics />
+        <SiteTelemetry />
       </body>
     </html>
   );

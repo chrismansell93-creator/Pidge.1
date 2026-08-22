@@ -85,14 +85,16 @@ model VerificationToken {
 }
 
 model Report {
-  id         String   @id @default(cuid())
-  reporterId String
-  targetId   String
-  reason     String
-  details    String?
-  reporter   User     @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
-  target     User     @relation("ReportsReceived", fields: [targetId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  id           String    @id @default(cuid())
+  reporterId   String
+  targetId     String
+  reason       String
+  details      String?
+  resolvedAt   DateTime?
+  resolvedById String?
+  reporter     User      @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  target       User      @relation("ReportsReceived", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
 }
 
 model Conversation {

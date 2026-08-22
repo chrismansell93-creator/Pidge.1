@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { otherUserId } from "@/lib/chats";
 import { photosFromUser } from "@/lib/photos";
+import { requireActiveUser } from "@/lib/active-user";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -20,19 +20,17 @@ async function loadOwned(conversationId: string, meId: string) {
 }
 
 export async function GET(_req: Request, context: RouteContext) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const { id } = await context.params;
-  const conversation = await loadOwned(id, session.user.id);
+  const conversation = await loadOwned(id, active.user.id);
   if (!conversation) {
     return NextResponse.json({ error: "Chat not found" }, { status: 404 });
   }
 
   const other =
-    otherUserId(conversation.userAId, conversation.userBId, session.user.id) ===
+    otherUserId(conversation.userAId, conversation.userBId, active.user.id) ===
     conversation.userAId
       ? conversation.userA
       : conversation.userB;
@@ -54,20 +52,18 @@ export async function GET(_req: Request, context: RouteContext) {
       id: message.id,
       body: message.body,
       senderId: message.senderId,
-      mine: message.senderId === session.user.id,
+      mine: message.senderId === active.user.id,
       createdAt: message.createdAt,
     })),
   });
 }
 
 export async function POST(req: Request, context: RouteContext) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const { id } = await context.params;
-  const conversation = await loadOwned(id, session.user.id);
+  const conversation = await loadOwned(id, active.user.id);
   if (!conversation) {
     return NextResponse.json({ error: "Chat not found" }, { status: 404 });
   }
@@ -84,7 +80,7 @@ export async function POST(req: Request, context: RouteContext) {
   const message = await prisma.message.create({
     data: {
       conversationId: id,
-      senderId: session.user.id,
+      senderId: active.user.id,
       body: text,
     },
   });

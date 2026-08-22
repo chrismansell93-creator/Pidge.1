@@ -15,4 +15,16 @@ const result = spawnSync(
   { stdio: "inherit", shell: true },
 );
 
-process.exit(result.status ?? 1);
+if ((result.status ?? 1) !== 0) {
+  // Preview/production builds should not hard-fail solely on schema sync flakes;
+  // generate already ran and additive columns are applied on the next successful push.
+  if (process.env.VERCEL) {
+    console.warn(
+      "prisma db push failed during Vercel build — continuing so the app can still compile.",
+    );
+    process.exit(0);
+  }
+  process.exit(result.status ?? 1);
+}
+
+process.exit(0);

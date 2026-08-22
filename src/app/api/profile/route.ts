@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { profileSchema } from "@/lib/validations";
 import { photosFromUser, serializePhotos } from "@/lib/photos";
 import { isAdminEmail } from "@/lib/admin";
+import { requireActiveUser } from "@/lib/active-user";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: active.user.id },
     select: {
       bio: true,
       city: true,
@@ -46,10 +44,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const body = await req.json().catch(() => null);
   const parsed = profileSchema.safeParse(body);
@@ -82,8 +78,8 @@ export async function POST(req: Request) {
   const album = photos && photos.length > 0 ? photos : image ? [image] : [];
   const cover = album[0] ?? image ?? undefined;
 
-  const user = await prisma.user.update({
-    where: { id: session.user.id },
+  await prisma.user.update({
+    where: { id: active.user.id },
     data: {
       name: name ?? undefined,
       bio: bio ?? null,
@@ -105,5 +101,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true, user }, { status: 200 });
+  return NextResponse.json({ ok: true }, { status: 200 });
 }
