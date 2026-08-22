@@ -2,11 +2,17 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { reportSchema } from "@/lib/validations";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { allowed } = checkRateLimit(`report:${session.user.id}`, 20, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json({ error: "Too many reports. Try again later." }, { status: 429 });
   }
 
   const parsed = reportSchema.safeParse(await req.json().catch(() => null));
