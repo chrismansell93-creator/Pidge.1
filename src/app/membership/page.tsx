@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Crown, Megaphone } from "lucide-react";
+import { Check, Crown, CreditCard, Megaphone } from "lucide-react";
 import { AppChrome } from "@/components/app-chrome";
 import { Button } from "@/components/ui/button";
 import { UNLIMITED_PRICE_GBP } from "@/lib/membership";
@@ -11,6 +11,8 @@ type Status = {
   tier: "free" | "unlimited";
   isUnlimited: boolean;
   expiresAt: string | null;
+  source?: "play" | "stripe" | null;
+  stripeEnabled?: boolean;
 };
 
 const limitedPerks = [
@@ -20,13 +22,6 @@ const limitedPerks = [
   "Basic chat",
 ];
 
-const unlimitedPerks = [
-  "See everyone nearby",
-  "Unlimited taps and chat",
-  "No adverts",
-  "Cancel in Google Play",
-];
-
 export default function MembershipPage() {
   const [status, setStatus] = useState<Status | null>(null);
   const [busy, setBusy] = useState(false);
@@ -34,15 +29,48 @@ export default function MembershipPage() {
   const [note, setNote] = useState<string | null>(null);
   const [android, setAndroid] = useState(false);
 
-  useEffect(() => {
-    setAndroid(canUsePlayBilling());
-    fetch("/api/membership")
+  function loadStatus() {
+    return fetch("/api/membership")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) setStatus(data);
+        return data as Status | null;
       })
-      .catch(() => undefined);
+      .catch(() => null);
+  }
+
+  useEffect(() => {
+    setAndroid(canUsePlayBilling());
+    void loadStatus();
+
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get("checkout");
+    if (checkout === "success") {
+      setNote("Payment complete. Your card subscription is now active.");
+      void loadStatus();
+    } else if (checkout === "cancelled") {
+      setError("Checkout cancelled. You have not been charged.");
+    }
+    if (checkout) {
+      window.history.replaceState({}, "", "/membership");
+    }
   }, []);
+
+  // Card payments run on the web; the Android app must use Google Play billing.
+  const canPayByCard = !android && Boolean(status?.stripeEnabled);
+  const cardOnly = status?.source === "stripe";
+  const priceSubtitle = android
+    ? "Google Play subscription"
+    : canPayByCard
+      ? "Secure card payment"
+      : "Google Play subscription";
+
+  const unlimitedPerks = [
+    "See everyone nearby",
+    "Unlimited taps and chat",
+    "No adverts",
+    android ? "Cancel in Google Play" : "Cancel anytime",
+  ];
 
   async function startPlayPurchase() {
     setBusy(true);
@@ -68,6 +96,28 @@ export default function MembershipPage() {
     }
   }
 
+  async function startCardPurchase() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/membership/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.url) {
+        setError(json?.error ?? "Could not start checkout");
+        return;
+      }
+      window.location.href = json.url as string;
+    } catch {
+      setError("Could not reach the payment page. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function switchToLimited() {
     setBusy(true);
     setError(null);
@@ -83,7 +133,11 @@ export default function MembershipPage() {
         return;
       }
       setStatus(json);
-      setNote("Unlimited cancelled in the app. Also cancel the Play subscription in Google Play if it is still renewing.");
+      setNote(
+        cardOnly
+          ? "Unlimited cancelled. Your card will not be charged again."
+          : "Unlimited cancelled in the app. Also cancel the Play subscription in Google Play if it is still renewing.",
+      );
     } finally {
       setBusy(false);
     }
@@ -95,7 +149,12 @@ export default function MembershipPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#ffc800]">Membership</p>
         <h1 className="mt-2 text-3xl font-black">Choose how you use Pidge</h1>
         <p className="mt-2 text-sm text-zinc-400">
-          Limited is free with adverts. Unlimited is £{UNLIMITED_PRICE_GBP} a month, billed only by Google Play.
+          Limited is free with adverts. Unlimited is £{UNLIMITED_PRICE_GBP} a month
+          {android
+            ? ", billed by Google Play."
+            : canPayByCard
+              ? ", paid by card."
+              : ", billed by Google Play."}
         </p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -141,7 +200,7 @@ export default function MembershipPage() {
               £{UNLIMITED_PRICE_GBP}
               <span className="text-base font-semibold text-zinc-300"> / month</span>
             </h2>
-            <p className="text-sm text-zinc-400">Google Play subscription</p>
+            <p className="text-sm text-zinc-400">{priceSubtitle}</p>
             <ul className="mt-4 space-y-2 text-sm text-zinc-200">
               {unlimitedPerks.map((perk) => (
                 <li key={perk} className="flex gap-2">
@@ -157,7 +216,7 @@ export default function MembershipPage() {
                   ? ` · paid until ${new Date(status.expiresAt).toLocaleDateString("en-GB")}`
                   : ""}
               </p>
-            ) : (
+            ) : android ? (
               <Button
                 type="button"
                 variant="brand"
@@ -168,12 +227,33 @@ export default function MembershipPage() {
               >
                 {busy ? "Opening Google Play…" : `Subscribe on Play · £${UNLIMITED_PRICE_GBP}/mo`}
               </Button>
+            ) : canPayByCard ? (
+              <Button
+                type="button"
+                variant="brand"
+                size="full"
+                disabled={busy}
+                onClick={() => void startCardPurchase()}
+                className="mt-6 gap-2"
+              >
+                <CreditCard className="size-4" />
+                {busy ? "Redirecting to checkout…" : `Pay by card · £${UNLIMITED_PRICE_GBP}/mo`}
+              </Button>
+            ) : (
+              <p className="mt-6 rounded-xl bg-white/5 py-3 text-center text-sm font-semibold text-zinc-400">
+                Open Pidge on the Android app to subscribe
+              </p>
             )}
           </article>
         </div>
-        {!android ? (
+        {!android && !canPayByCard ? (
           <p className="mt-4 text-sm text-zinc-500">
-            Payments run through Google Play on the Android app. The website cannot take card payments.
+            Payments run through Google Play on the Android app. Card payments are not enabled yet.
+          </p>
+        ) : null}
+        {canPayByCard && !status?.isUnlimited ? (
+          <p className="mt-4 text-sm text-zinc-500">
+            Secure checkout by Stripe. Cancel anytime from this page.
           </p>
         ) : null}
         {note ? <p className="mt-4 text-sm text-emerald-300">{note}</p> : null}
