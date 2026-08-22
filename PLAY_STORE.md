@@ -42,7 +42,9 @@ Regenerate with `node scripts/generate-play-icons.mjs`.
 
 1. Host this Next.js app at `https://www.pidge.dating` and set `NEXT_PUBLIC_APP_URL` and `AUTH_URL` to that URL.
 2. In Play Console create a subscription product: `pidge_unlimited_monthly` / £10 / month.
-3. The Android project is already in `android/`. Open it:
+3. The Android project is already in `android/`.
+
+### Option A: Android Studio (local)
 
 ```bash
 cd C:\Users\chris\Pidge.1
@@ -51,8 +53,25 @@ npx cap sync android
 npx cap open android
 ```
 
-4. In Android Studio generate a Play App Signing key and build an **Android App Bundle (.aab)**.
-5. Play Billing is wired: product `pidge_unlimited_monthly`. Create that subscription in Play Console before testing purchases.
+In Android Studio generate a Play App Signing key and build an **Android App Bundle (.aab)**.
+
+### Option B: EAS Build (cloud)
+
+The repo is set up for EAS Build. After installing EAS CLI and running `eas login` / `eas init`:
+
+```bash
+eas build --platform android --profile production
+```
+
+This produces an `.aab` ready for Play Console. To also submit automatically:
+
+```bash
+eas build --platform android --profile production --auto-submit
+```
+
+Manage upload credentials with `eas credentials`.
+
+4. Play Billing is wired: product `pidge_unlimited_monthly`. Create that subscription in Play Console before testing purchases.
 
 ## Data safety form (short)
 
