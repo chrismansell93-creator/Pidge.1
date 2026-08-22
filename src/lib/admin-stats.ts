@@ -96,7 +96,7 @@ export async function getSiteOverview(): Promise<SiteOverview> {
     prisma.message.count(),
     prisma.message.count({ where: { createdAt: { gte: dayAgo } } }),
     prisma.meetupRequest.count(),
-    prisma.report.count(),
+    prisma.report.count({ where: { resolvedAt: null } }),
     prisma.user.findMany({
       where: { ...live, membershipTier: "unlimited" },
       select: { membershipTier: true, membershipExpiresAt: true },
@@ -110,6 +110,7 @@ export async function getSiteOverview(): Promise<SiteOverview> {
       select: { createdAt: true },
     }),
     prisma.report.findMany({
+      where: { resolvedAt: null },
       orderBy: { createdAt: "desc" },
       take: 40,
       include: {

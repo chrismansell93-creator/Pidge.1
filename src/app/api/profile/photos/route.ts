@@ -1,16 +1,14 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { requireActiveUser } from "@/lib/active-user";
 
 const MAX_BYTES = 6 * 1024 * 1024;
 const allowed = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const form = await req.formData();
   const file = form.get("file");
@@ -33,7 +31,7 @@ export async function POST(req: Request) {
           ? "gif"
           : "jpg";
 
-  const dir = path.join(process.cwd(), "public", "uploads", session.user.id);
+  const dir = path.join(process.cwd(), "public", "uploads", active.user.id);
   await mkdir(dir, { recursive: true });
 
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
@@ -41,6 +39,6 @@ export async function POST(req: Request) {
   await writeFile(path.join(dir, filename), buffer);
 
   return NextResponse.json({
-    url: `/uploads/${session.user.id}/${filename}`,
+    url: `/uploads/${active.user.id}/${filename}`,
   });
 }

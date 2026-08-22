@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import {
   DEFAULT_ORIGIN,
@@ -8,22 +7,21 @@ import {
   type NearbyPerson,
 } from "@/lib/geo";
 import { photosFromUser } from "@/lib/photos";
+import { requireActiveUser } from "@/lib/active-user";
 
 export async function GET(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const active = await requireActiveUser();
+  if (active.error) return active.error;
 
   const url = new URL(req.url);
   const queryLat = url.searchParams.get("lat");
   const queryLng = url.searchParams.get("lng");
 
   const me = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: active.user.id },
   });
 
-  if (!me) {
+  if (!me || me.deletedAt) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
