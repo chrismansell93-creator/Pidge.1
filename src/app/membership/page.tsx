@@ -32,10 +32,9 @@ export default function MembershipPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
-  const [android, setAndroid] = useState(false);
+  const [android] = useState(() => canUsePlayBilling());
 
   useEffect(() => {
-    setAndroid(canUsePlayBilling());
     fetch("/api/membership")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
