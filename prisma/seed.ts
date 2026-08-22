@@ -160,10 +160,6 @@ function identityFor(name: string) {
   return { gender, into: intoRotation[n % intoRotation.length], tribes };
 }
 
-function album(primary: string, extras: string[]) {
-  return JSON.stringify([primary, ...extras.filter((url) => url !== primary)].slice(0, 6));
-}
-
 const nearbyPeople = [
   {
     name: "Alex",

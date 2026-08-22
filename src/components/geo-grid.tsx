@@ -53,7 +53,11 @@ export function GeoGrid({ initialPeople, initialCity, initialUnlimited = false }
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [tribeFilter, setTribeFilter] = useState<string | null>(null);
   const [isUnlimited, setIsUnlimited] = useState(initialUnlimited);
-  const [tapsUsed, setTapsUsed] = useState(0);
+  const [tapsUsed, setTapsUsed] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const used = Number(localStorage.getItem(tapsStorageKey("me")) ?? 0);
+    return Number.isFinite(used) ? used : 0;
+  });
 
   const loadNearby = useCallback(async (lat?: number, lng?: number) => {
     const params = new URLSearchParams();
@@ -161,7 +165,10 @@ export function GeoGrid({ initialPeople, initialCity, initialUnlimited = false }
   }, [loadNearby]);
 
   useEffect(() => {
-    void syncLocation();
+    const timer = window.setTimeout(() => {
+      void syncLocation();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [syncLocation]);
 
   useEffect(() => {
@@ -171,8 +178,6 @@ export function GeoGrid({ initialPeople, initialCity, initialUnlimited = false }
         if (data?.isUnlimited != null) setIsUnlimited(Boolean(data.isUnlimited));
       })
       .catch(() => undefined);
-    const used = Number(localStorage.getItem(tapsStorageKey("me")) ?? 0);
-    setTapsUsed(Number.isFinite(used) ? used : 0);
   }, []);
 
   useEffect(() => {
@@ -410,6 +415,7 @@ export function GeoGrid({ initialPeople, initialCity, initialUnlimited = false }
 
       {selected ? (
         <ProfileSheet
+          key={selected.id}
           person={selected}
           onClose={() => setSelected(null)}
           onTap={handleTap}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Flame, MapPin, MessageCircle, X, Zap } from "lucide-react";
 import { formatDistance, isFresh, type NearbyPerson } from "@/lib/geo";
@@ -19,10 +19,6 @@ export function ProfileSheet({ person, onClose, onTap }: ProfileSheetProps) {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("spam");
   const [reportNote, setReportNote] = useState<string | null>(null);
-
-  useEffect(() => {
-    setIndex(0);
-  }, [person.id]);
 
   const tags = parseList(person.interests);
   const tribes = parseList(person.tribes);
