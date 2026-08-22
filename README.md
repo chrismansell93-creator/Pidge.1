@@ -2,7 +2,7 @@
 
 Location dating app. Adults 18+. Domain: [www.pidge.dating](https://www.pidge.dating).
 
-Limited is free (50 nearby profiles, ads, 8 taps a day). Unlimited is £10/month through **Google Play only**.
+Limited is free (50 nearby profiles, ads, 8 taps a day). Unlimited is £10/month, billed through **Google Play** in the Android app and by **card via Stripe** on the web.
 
 ## Run locally
 
@@ -24,7 +24,28 @@ AUTH_SECRET="<generate with npx auth secret>"
 AUTH_URL="https://www.pidge.dating"
 NEXT_PUBLIC_APP_URL="https://www.pidge.dating"
 PLAY_PRODUCT_ID="pidge_unlimited_monthly"
+
+# Stripe (web card payments). Card payments are disabled until STRIPE_SECRET_KEY is set.
+STRIPE_SECRET_KEY="sk_live_..."          # or sk_test_... for testing
+STRIPE_WEBHOOK_SECRET="whsec_..."        # from the webhook endpoint below
+STRIPE_PRICE_ID="price_..."              # optional; omit to use an inline £10/month price
 ```
+
+## Stripe card payments
+
+On the web (non-Android), the Membership page offers **Pay by card**, which opens
+Stripe Checkout for the £10/month Unlimited subscription.
+
+- Checkout session: `POST /api/membership/stripe/checkout` (returns a Checkout URL).
+- Fulfilment webhook: `POST /api/membership/stripe/webhook`. Point a Stripe webhook
+  at `https://www.pidge.dating/api/membership/stripe/webhook` and subscribe to
+  `checkout.session.completed`, `customer.subscription.updated`,
+  `customer.subscription.deleted`, and `invoice.payment_succeeded`. Use the signing
+  secret it gives you as `STRIPE_WEBHOOK_SECRET`.
+- Downgrading to Limited cancels the Stripe subscription automatically.
+
+The Android app continues to use Google Play billing (store policy), so the card
+button is shown only on the web.
 
 ## Android / Play Store
 
