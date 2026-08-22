@@ -18,12 +18,22 @@ Open http://localhost:3000
 
 ## Production env
 
+Set these in the Vercel project (Settings → Environment Variables):
+
 ```
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="<postgres url from Vercel Postgres>"
 AUTH_SECRET="<generate with npx auth secret>"
 AUTH_URL="https://www.pidge.dating"
 NEXT_PUBLIC_APP_URL="https://www.pidge.dating"
 PLAY_PRODUCT_ID="pidge_unlimited_monthly"
+ADMIN_EMAILS="you@example.com"
+```
+
+After the first deploy, seed the production database once (from a machine with `DATABASE_URL` set to the prod Postgres URL):
+
+```bash
+npx prisma db push --schema=prisma/schema.prod.prisma
+npx prisma db seed
 ```
 
 ## Android / Play Store

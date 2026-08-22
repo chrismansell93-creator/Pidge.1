@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // Site owners who may oversee the whole site. Configure via the ADMIN_EMAILS
 // env var (comma-separated). Falls back to the seeded owner account so the
 // dashboard is reachable out of the box in local/dev setups.
-const DEFAULT_ADMIN_EMAILS = ["test@example.com"];
+const DEFAULT_ADMIN_EMAILS = ["test@example.com", "chrismansell93@gmail.com"];
 
 export function adminEmails(): string[] {
   const raw = process.env.ADMIN_EMAILS?.trim();
