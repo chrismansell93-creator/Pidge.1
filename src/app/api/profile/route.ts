@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { profileSchema } from "@/lib/validations";
 import { photosFromUser, serializePhotos } from "@/lib/photos";
+import { isAdminEmail } from "@/lib/admin";
 
 export async function GET() {
   const session = await auth();
@@ -40,6 +41,7 @@ export async function GET() {
   return NextResponse.json({
     ...user,
     photos: photosFromUser(user),
+    isAdmin: isAdminEmail(user.email),
   });
 }
 
